@@ -31,28 +31,26 @@ MANUAL="m4aconvert script manual:
 "
 
 # functions
+gather_files(){
+    if [ -d "$1" ]; then
+        # whole folder
+        echo "$(find $1 -maxdepth 1 -type f -iname '*.wav')"
+    else
+        # specified files
+        echo "$(ls "$@" | awk '/.wav$/ { print $0 }')"
+    fi
+}
+
 parse_channels(){
     local CHANNELS=$(afinfo "$1" | grep "Data format:") # Data format:     1 ch,  44100 Hz, 'lpcm' (0x0000000C) 16-bit little-endian signed integer
     echo ${CHANNELS:17:1}
     # awk '{ print $3 }' $CHANNELS
 }
 
-gather_files(){
-    if [ -d "$1" ]; then
-        echo "$(find $1 -maxdepth 1 -type f -iname '*.wav')"
-    else
-        echo "$(ls "$@" | awk '/.wav$/ { print $0 }')"
-    fi
-}
-
-
 convert(){
-    local FILES="$1"
     local IFS=$(echo -en "\n\b")
-    
     echo "converting: " ${FILES} "..." #TODO: or not
-    
-    for FILE in $FILES; do
+    for FILE in $1; do
         local CUR_CHANNELS="$CHANNELS"
         if [ -z "$CHANNELS" ]; then
             CUR_CHANNELS=$(parse_channels "$FILE")
