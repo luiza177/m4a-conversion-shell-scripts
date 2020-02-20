@@ -31,57 +31,51 @@ MANUAL="m4amanage script manual:
 "
 
 # functions
+gather_files(){
+    if [ -d "$1" ]; then
+        # whole folder
+        echo "$(find -E "$1" -maxdepth 1 -type f -regex '.*(.wav|m4a)$')"
+    else
+        # specified files
+        echo "$(ls "$@" | awk '/.wav|.m4a$/ { print $0 }')"
+    fi
+}
+
 parse_channels(){
-    local CHANNELS=$(afinfo $1 | grep "Data format:") # Data format:     1 ch,  44100 Hz, 'lpcm' (0x0000000C) 16-bit little-endian signed integer
+    local CHANNELS=$(afinfo "$1" | grep "Data format:") # Data format:     1 ch,  44100 Hz, 'lpcm' (0x0000000C) 16-bit little-endian signed integer
     echo ${CHANNELS:17:1}
 }
 
 parse_bitrate(){
-    local BITRATE=$(afinfo $1 | grep "bit rate" | awk '{print $3;}') # bit rate: 125655 bits per second
+    local BITRATE=$(afinfo "$1" | grep "bit rate" | awk '{print $3;}') # bit rate: 125655 bits per second
     echo ${BITRATE}
 }
 
-gather_files(){
-    if [ -d $1 ]; then
-        # whole folder
-        echo $(ls $1 | grep -E '.m4a|.wav')
-    else
-        # specified files   
-        echo "$*"
-    fi
-}
-
 info_cmd(){
-    local BASE="$1"
-    local FILES="$2"
+    local FILES=$(gather_files "$@")
+    local IFS=$(echo -en "\n\b")
+    # echo $1
     for FILE in $FILES; do
-        if [ -d "$BASE" ]; then
-            FILE="$BASE/$FILE"
-        fi
         echo "${FILE}:"
         local BITRATE=$(parse_bitrate "$FILE")        
         local BITRATE_KBPS=$(echo "scale=0; $BITRATE/1000" | bc)
-        local CHANNELS=$(parse_channels $FILE)
+        local CHANNELS=$(parse_channels "$FILE")
         echo "  Bitrate: $BITRATE_KBPS kbps"
         echo "  Channels: $CHANNELS"
     done
 }
 
 convert(){
-    local BASE="$1"
-    local FILES="$2"
-    echo "converting: ${FILES}..."
-    for FILE in $FILES; do
-        if [ -d "$BASE" ]; then
-            FILE="$BASE/$FILE"
+    echo "converting: " ${1} "..."
+    local IFS=$(echo -en "\n\b")
+    for FILE in $1; do
+        local CUR_CHANNELS="$CHANNELS"
+        if [ -z "$CHANNELS" ]; then
+            CUR_CHANNELS=$(parse_channels "$FILE")
         fi
-        local CUR_CHANNELS=$CHANNELS
-        if [ -z $CHANNELS ]; then
-            CUR_CHANNELS=$(parse_channels $FILE)
-        fi
-        afconvert -d aac -f m4af -c $CUR_CHANNELS -b $BITRATE "$FILE" "${FILE%.wav}.m4a"; 
+        afconvert -d aac -f m4af -c $CUR_CHANNELS -b $BITRATE "$FILE" "${FILE%.wav}.m4a"; # remove .wav from filename
         # get generated *.m4a and move to output folder
-        FILE_M4A=$(echo "$FILE" | sed s/.wav/.m4a/g)
+        FILE_M4A=$(echo "$FILE" | sed s/.wav/.m4a/g) # replaces .wav with .m4a from $FILE
         mv "$FILE_M4A" "$OUTPUT_FOLDER"
     done
 }
@@ -119,8 +113,8 @@ convert_cmd() {
         mkdir "${OUTPUT_FOLDER}"
     fi
 
-    FILES=$(gather_files $@)
-    convert "$1" "$FILES" 
+    local FILES=$(gather_files "$@")
+    convert "$FILES" 
     echo "done"
 }
 
@@ -134,8 +128,7 @@ case "$SUBCOMMAND" in
         ;;
     info)
         shift
-        FILES=$(gather_files $@)
-        info_cmd "$1" "$FILES"
+        info_cmd "$@"
         exit 0
         ;;
     -h|--help|help)

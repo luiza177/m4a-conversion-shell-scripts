@@ -48,8 +48,8 @@ parse_channels(){
 }
 
 convert(){
+    echo "converting: " ${1} "..."
     local IFS=$(echo -en "\n\b")
-    echo "converting: " ${FILES} "..." #TODO: or not
     for FILE in $1; do
         local CUR_CHANNELS="$CHANNELS"
         if [ -z "$CHANNELS" ]; then
