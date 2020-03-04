@@ -42,11 +42,13 @@ gather_files(){
 }
 
 parse_channels(){
+    # TODO: convert to ffprobe
     local CHANNELS=$(afinfo "$1" | grep "Data format:") # Data format:     1 ch,  44100 Hz, 'lpcm' (0x0000000C) 16-bit little-endian signed integer
     echo ${CHANNELS:17:1}
 }
 
 parse_bitrate(){
+    # TODO: convert to ffprobe
     local BITRATE=$(afinfo "$1" | grep "bit rate" | awk '{print $3;}') # bit rate: 125655 bits per second
     echo ${BITRATE}
 }
@@ -74,6 +76,8 @@ convert(){
             CUR_CHANNELS=$(parse_channels "$FILE")
         fi
         afconvert -d aac -f m4af -c $CUR_CHANNELS -b $BITRATE "$FILE" "${FILE%.wav}.m4a"; # remove .wav from filename
+        # TODO: convert to ffmpeg for cross-platform
+        # TODO: ffmpeg -i input -codec:a aac output.m4a
         # get generated *.m4a and move to output folder
         FILE_M4A=$(echo "$FILE" | sed s/.wav/.m4a/g) # replaces .wav with .m4a from $FILE
         mv "$FILE_M4A" "$OUTPUT_FOLDER"

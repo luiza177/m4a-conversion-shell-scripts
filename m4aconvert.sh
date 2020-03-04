@@ -56,6 +56,8 @@ convert(){
             CUR_CHANNELS=$(parse_channels "$FILE")
         fi
         afconvert -d aac -f m4af -c $CUR_CHANNELS -b $BITRATE "$FILE" "${FILE%.wav}.m4a"; # remove .wav from filename
+        # TODO: convert to ffmpeg for cross-platform
+        # TODO: ffmpeg -i input -codec:a aac -b:a 128k output.m4a
         # get generated *.m4a and move to output folder
         FILE_M4A=$(echo "$FILE" | sed s/.wav/.m4a/g) # replaces .wav with .m4a from $FILE
         mv "$FILE_M4A" "$OUTPUT_FOLDER"
