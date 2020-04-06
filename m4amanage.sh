@@ -59,6 +59,9 @@ info_cmd(){
     # echo $1
     for FILE in $FILES; do
         echo "${FILE}:"
+        if [ ${FILE:(-4)} = ".m4a" ]; then
+            echo "  [$(afinfo ${FILE} | grep optimized)]"
+        fi
         local BITRATE=$(parse_bitrate "$FILE")        
         local BITRATE_KBPS=$(echo "scale=0; $BITRATE/1000" | bc)
         local CHANNELS=$(parse_channels "$FILE")
