@@ -76,6 +76,7 @@ convert(){
         if [ -z "$CHANNELS" ]; then
             CUR_CHANNELS=$(parse_channels "$FILE")
         fi
+        # defaults to ABR without -s 0 for CBR
         afconvert -d aac -f m4af -s 0 -c $CUR_CHANNELS -b $BITRATE "$FILE" "${FILE%.wav}.m4a"; # remove .wav from filename
         # get generated *.m4a and move to output folder
         FILE_M4A=$(echo "$FILE" | sed s/.wav/.m4a/g) # replaces .wav with .m4a from $FILE
