@@ -24,7 +24,7 @@ MANUAL="m4ainfo script manual:
 gather_files(){
     if [ -d "$1" ]; then
         # whole folder
-        echo "$(find -E $1 -maxdepth 1 -type f -regex '.*(.wav|m4a)$')"
+        echo "$(find -E "$1" -maxdepth 1 -type f -regex '.*(.wav|m4a)$')"
     else
         # specified files
         echo "$(ls "$@" | awk '/.wav|.m4a$/ { print $0 }')"
