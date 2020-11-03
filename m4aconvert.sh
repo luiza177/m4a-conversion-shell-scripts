@@ -37,7 +37,7 @@ gather_files(){
         echo "$(find -E "$1" -maxdepth 1 -type f -regex '.*(.wav|flac)$')"
     else
         # specified files
-        echo "$(ls "$@" | awk '/.wav|.flac$/ { print $0 }')"
+        echo "$(ls "$@" | awk '/\.(wav|flac)$/ { print $0 }')"
     fi
 }
 
