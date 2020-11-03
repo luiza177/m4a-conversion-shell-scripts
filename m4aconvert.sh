@@ -37,7 +37,7 @@ gather_files(){
         echo "$(find -E "$1" -maxdepth 1 -type f -regex '.*(.wav|flac)$')"
     else
         # specified files
-        echo "$(ls "$@" | awk '/.wav$/ { print $0 }')"
+        echo "$(ls "$@" | awk '/.wav|.flac$/ { print $0 }')"
     fi
 }
 
@@ -50,21 +50,43 @@ parse_channels(){
 convert(){
     echo "converting: " ${1} "..."
     local IFS=$(echo -en "\n\b")
+
     for FILE in $1; do
+        # local extension="${FILE:}" # last 3 or 4 characters
+
+        #! DEAL W/ FOLDER
+        base="$(basename "$FILE")"
+        dir="$(dirname "$FILE")"
+        dir_display=$(basename "$dir")
+        
+        output_folder=""
+        output=""
+
+        if [ -n "$OUTPUT_FOLDER" ]; then
+            output_folder="${OUTPUT_FOLDER}/"
+            output="${OUTPUT_FOLDER}/${base}"
+        else
+            output_folder="${dir}/${DEFAULT_OUTPUT_FOLDER}/"
+            output="${output_folder}/${base}"
+        fi
+
+        if [ ! -d "${output_folder}" ]; then
+            mkdir "${output_folder}"
+        fi
+        #! FOLDER END
+
+
         local CUR_CHANNELS="$CHANNELS"
         if [ -z "$CHANNELS" ]; then
             CUR_CHANNELS=$(parse_channels "$FILE")
         fi
         # defaults to ABR without -s 0 for CBR
-        afconvert -d aac -f m4af -s 0 -c $CUR_CHANNELS -b $BITRATE "$FILE" "${FILE%.wav}.m4a"; # remove .wav from filename
-        # get generated *.m4a and move to output folder
-        FILE_M4A=$(echo "$FILE" | sed s/.wav/.m4a/g) # replaces .wav with .m4a from $FILE
-        mv "$FILE_M4A" "$OUTPUT_FOLDER"
+        afconvert -d aac -f m4af -s 0 -c "$CUR_CHANNELS" -b "$BITRATE" "$FILE" "${output%.wav}.m4a"; # remove .wav from filename
     done
 }
 
 # default variables: 
-OUTPUT_FOLDER="M4A"
+DEFAULT_OUTPUT_FOLDER="M4A"
 BITRATE=128000 # 128kbps
 
 while true; do
@@ -91,13 +113,8 @@ while true; do
             ;;
         *)
             break
-    esac
+  esac
 done
-
-# checks for or creates output folder
-if [ ! -d "${OUTPUT_FOLDER}" ]; then
-    mkdir "${OUTPUT_FOLDER}"
-fi
 
 FILES=$(gather_files "$@")
 convert "$FILES" 
