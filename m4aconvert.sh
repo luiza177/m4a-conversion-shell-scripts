@@ -34,10 +34,10 @@ MANUAL="m4aconvert script manual:
 gather_files(){
     if [ -d "$1" ]; then
         # whole folder
-        echo "$(find -E "$1" -maxdepth 1 -type f -regex '.*(.wav|flac)$')"
+        echo "$(find -E "$1" -maxdepth 1 -type f -regex '.*(.wav|m4a|flac)$')"
     else
         # specified files
-        echo "$(ls "$@" | awk '/\.(wav|flac)$/ { print $0 }')"
+        echo "$(ls "$@" | awk '/\.(wav|m4a|flac)$/ { print $0 }')"
     fi
 }
 
@@ -81,7 +81,7 @@ convert(){
             CUR_CHANNELS=$(parse_channels "$FILE")
         fi
         # defaults to ABR without -s 0 for CBR
-        afconvert -d aac -f m4af -s 0 -c "$CUR_CHANNELS" -b "$BITRATE" "$FILE" "${output%.wav}.m4a"; # remove .wav from filename
+        afconvert -d aac -f m4af -s 0 -c "$CUR_CHANNELS" -b "$BITRATE" "$FILE" "${output%.*}.m4a"; # remove extension from filename
     done
 }
 
