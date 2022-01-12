@@ -74,10 +74,8 @@ for FILE in $FILES; do
         level=$(bc -l <<< "-16.0-(${integrated})")
         if [ $(echo "$plr > 13.0" | bc -l) -eq 1 ]; then
             COMMAND+="-af \"alimiter=level=false:level_in=${level}dB:limit=-3.0dB\" "
-            echo "plr high"
         else
             COMMAND+="-af \"volume=${level}dB\" "
-            echo "simple level"
         fi
     else
         echo "${base} is within tolerance"
