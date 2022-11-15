@@ -34,10 +34,10 @@ MANUAL="m4aconvert script manual:
 gather_files(){
     if [ -d "$1" ]; then
         # whole folder
-        echo "$(find -E "$1" -maxdepth 1 -type f -regex '.*(.wav|m4a|flac)$')"
+        echo "$(find -E "$1" -maxdepth 1 -type f -regex '.*(.wav|m4a|flac|mp3)$')"
     else
         # specified files
-        echo "$(ls "$@" | awk '/\.(wav|m4a|flac)$/ { print $0 }')"
+        echo "$(ls "$@" | awk '/\.(wav|m4a|flac|mp3)$/ { print $0 }')"
     fi
 }
 
